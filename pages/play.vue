@@ -135,18 +135,46 @@
       </div>
     </div>
 
-    <div
-      class="flex gap-2 sm:gap-3 justify-center mb-4 sm:mb-8 flex-wrap max-w-xs sm:max-w-none mx-auto"
-    >
-      <button
-        v-for="num in 9"
-        :key="num"
-        class="w-8 h-8 sm:w-12 sm:h-12 border-2 border-gray-800 bg-white text-sm sm:text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="inputNumber(num)"
-        :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
-      >
-        {{ num }}
-      </button>
+    <div class="mb-4 sm:mb-8 mx-auto max-w-sm sm:max-w-none">
+      <!-- Mobile: 2 rows layout -->
+      <div class="grid grid-cols-5 gap-2 sm:hidden">
+        <button
+          v-for="num in 9"
+          :key="num"
+          class="w-12 h-12 border-2 border-gray-800 bg-white text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="inputNumber(num)"
+          :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
+        >
+          {{ num }}
+        </button>
+        <button
+          class="w-12 h-12 border-2 border-gray-800 bg-red-50 text-red-700 text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="eraseCell"
+          :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
+        >
+          X
+        </button>
+      </div>
+      
+      <!-- Desktop: single row layout -->
+      <div class="hidden sm:flex gap-3 justify-center flex-wrap">
+        <button
+          v-for="num in 9"
+          :key="num"
+          class="w-12 h-12 border-2 border-gray-800 bg-white text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="inputNumber(num)"
+          :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
+        >
+          {{ num }}
+        </button>
+        <button
+          class="w-12 h-12 border-2 border-gray-800 bg-red-50 text-red-700 text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="eraseCell"
+          :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
+        >
+          X
+        </button>
+      </div>
     </div>
 
     <div class="flex gap-3 sm:gap-5 justify-center flex-wrap">
