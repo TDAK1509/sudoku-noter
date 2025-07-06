@@ -1,47 +1,53 @@
 <template>
   <div
-    class="max-w-2xl mx-auto p-5 text-center"
+    class="max-w-2xl mx-auto p-3 sm:p-5 text-center min-h-screen flex flex-col justify-center"
     tabindex="0"
     @keydown="handleKeydown"
   >
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Sudoku Noter</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-8">
+      Sudoku Noter
+    </h1>
 
-    <p class="text-gray-600 mb-8">
+    <p class="text-gray-600 mb-4 sm:mb-8 text-sm sm:text-base">
       Create your Sudoku puzzle and start solving it.
     </p>
 
-    <div class="inline-block border-4 border-gray-800 mb-8">
-      <div v-for="(row, rowIndex) in sudokuGrid" :key="rowIndex" class="flex">
+    <div class="w-full max-w-sm sm:max-w-md mx-auto mb-4 sm:mb-8">
+      <div
+        class="grid grid-cols-9 border-2 sm:border-4 border-gray-800 bg-white aspect-square"
+      >
         <div
-          v-for="(cell, colIndex) in row"
-          :key="colIndex"
-          class="w-12 h-12 border border-gray-300 flex items-center justify-center text-xl font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100 relative"
+          v-for="(cell, index) in sudokuGrid.flat()"
+          :key="index"
+          class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100 relative aspect-square"
           :class="{
             'bg-blue-100 border-2 border-blue-500':
-              selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
-            'border-r-4 border-r-gray-800': colIndex === 2 || colIndex === 5,
-            'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5,
-            'text-red-600 bg-red-50': cell && !isValidCell(rowIndex, colIndex),
+              selectedCell?.row === Math.floor(index / 9) && selectedCell?.col === index % 9,
+            'border-r-4 border-r-gray-800': (index % 9) === 2 || (index % 9) === 5,
+            'border-b-4 border-b-gray-800': Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5,
+            'text-red-600 bg-red-50': cell && !isValidCell(Math.floor(index / 9), index % 9),
           }"
-          @click="selectCell(rowIndex, colIndex)"
+          @click="selectCell(Math.floor(index / 9), index % 9)"
         >
           {{ cell || "" }}
         </div>
       </div>
     </div>
 
-    <div class="flex gap-3 justify-center mb-8 flex-wrap">
+    <div
+      class="flex gap-2 sm:gap-3 justify-center mb-4 sm:mb-8 flex-wrap max-w-xs sm:max-w-none mx-auto"
+    >
       <button
         v-for="num in 9"
         :key="num"
-        class="w-12 h-12 border-2 border-gray-800 bg-white text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-8 h-8 sm:w-12 sm:h-12 border-2 border-gray-800 bg-white text-sm sm:text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="inputNumber(num)"
         :disabled="!selectedCell"
       >
         {{ num }}
       </button>
       <button
-        class="w-12 h-12 border-2 border-gray-800 bg-red-50 text-red-700 font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-8 h-8 sm:w-12 sm:h-12 border-2 border-gray-800 bg-red-50 text-red-700 text-sm sm:text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="clearCell"
         :disabled="!selectedCell"
       >
@@ -50,7 +56,7 @@
     </div>
 
     <button
-      class="bg-green-500 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-green-600 border-none"
+      class="bg-green-500 text-white px-6 py-2 sm:px-8 sm:py-3 text-base sm:text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-green-600 border-none"
       @click="submitPuzzle"
     >
       Start Playing
