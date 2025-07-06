@@ -16,28 +16,30 @@
       <button
         class="px-4 py-2 border-2 border-gray-800 bg-white text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="undo"
-        :disabled="history.length === 0"
+        :disabled="history.length === 0 || isGameComplete"
       >
         Undo
       </button>
       <button
-        class="px-4 py-2 border-2 border-gray-800 text-sm font-bold cursor-pointer rounded transition-all duration-200"
+        class="px-4 py-2 border-2 border-gray-800 text-sm font-bold cursor-pointer rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         :class="noteMode === 'center' ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'"
         @click="toggleNoteMode('center')"
+        :disabled="isGameComplete"
       >
         Center Note
       </button>
       <button
-        class="px-4 py-2 border-2 border-gray-800 text-sm font-bold cursor-pointer rounded transition-all duration-200"
+        class="px-4 py-2 border-2 border-gray-800 text-sm font-bold cursor-pointer rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         :class="noteMode === 'corners' ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'"
         @click="toggleNoteMode('corners')"
+        :disabled="isGameComplete"
       >
         Corners Note
       </button>
       <button
         class="px-4 py-2 border-2 border-gray-800 bg-red-50 text-red-700 text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="eraseCell"
-        :disabled="!selectedCell || isSelectedCellFixed()"
+        :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
       >
         Erase
       </button>
@@ -52,15 +54,17 @@
         <div
           v-for="(cell, colIndex) in row"
           :key="colIndex"
-          class="w-12 h-12 border border-gray-300 flex items-center justify-center text-xl font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100 relative"
+          class="w-12 h-12 border border-gray-300 flex items-center justify-center text-xl font-bold transition-colors duration-200 relative"
           :class="{ 
-            'bg-blue-100 border-2 border-blue-500': selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
+            'bg-blue-100 border-2 border-blue-500': selectedCell?.row === rowIndex && selectedCell?.col === colIndex && !isGameComplete,
             'bg-gray-100 text-gray-800 font-black hover:bg-gray-100': isFixedCell(rowIndex, colIndex),
             'border-r-4 border-r-gray-800': colIndex === 2 || colIndex === 5,
             'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5,
-            'text-red-600 bg-red-50': cell.value && !isValidCell(rowIndex, colIndex)
+            'text-red-600 bg-red-50': cell.value && !isValidCell(rowIndex, colIndex),
+            'cursor-pointer hover:bg-gray-100': !isGameComplete,
+            'cursor-not-allowed': isGameComplete
           }"
-          @click="selectCell(rowIndex, colIndex)"
+          @click="!isGameComplete && selectCell(rowIndex, colIndex)"
         >
           <!-- Main number -->
           <span v-if="cell.value" class="text-xl font-bold" :class="{
@@ -93,7 +97,7 @@
         :key="num"
         class="w-12 h-12 border-2 border-gray-800 bg-white text-lg font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
         @click="inputNumber(num)"
-        :disabled="!selectedCell || isSelectedCellFixed()"
+        :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
       >
         {{ num }}
       </button>
@@ -101,17 +105,35 @@
     
     <div class="flex gap-5 justify-center">
       <button 
-        class="bg-gray-600 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-gray-700 border-none"
+        class="bg-gray-600 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-gray-700 border-none disabled:opacity-50 disabled:cursor-not-allowed"
         @click="goBack"
+        :disabled="isGameComplete"
       >
         Back to Input
       </button>
       <button 
-        class="bg-orange-500 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-orange-600 border-none"
+        class="bg-orange-500 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-orange-600 border-none disabled:opacity-50 disabled:cursor-not-allowed"
         @click="resetGame"
+        :disabled="isGameComplete"
       >
         Reset Game
       </button>
+    </div>
+    
+    <!-- Congratulation Modal -->
+    <div v-if="isGameComplete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center">
+        <div class="text-6xl mb-4">🎉</div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Congratulations!</h2>
+        <p class="text-gray-600 mb-4">You've successfully completed the Sudoku puzzle!</p>
+        <p class="text-lg font-semibold text-blue-600 mb-6">Time: {{ formatTime(elapsedTime) }}</p>
+        <button 
+          class="bg-green-500 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-green-600 border-none"
+          @click="startNewGame"
+        >
+          Start New Game
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -130,6 +152,7 @@ const noteMode = ref(null) // null, 'center', or 'corners'
 const history = ref([])
 const startTime = ref(Date.now())
 const elapsedTime = ref(0)
+const isGameComplete = ref(false)
 
 const selectCell = (row, col) => {
   selectedCell.value = { row, col }
@@ -178,6 +201,37 @@ const isValidCell = (row, col) => {
   return true
 }
 
+const checkGameComplete = () => {
+  // Check if all cells are filled
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (!gameGrid.value[row][col].value) {
+        return false
+      }
+    }
+  }
+  
+  // Check if all cells are valid
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (!isValidCell(row, col)) {
+        return false
+      }
+    }
+  }
+  
+  // Game is complete!
+  isGameComplete.value = true
+  if (timerInterval) {
+    clearInterval(timerInterval)
+  }
+  return true
+}
+
+const startNewGame = () => {
+  navigateTo('/')
+}
+
 const saveState = () => {
   const state = JSON.parse(JSON.stringify(gameGrid.value))
   history.value.push(state)
@@ -187,7 +241,7 @@ const saveState = () => {
 }
 
 const undo = () => {
-  if (history.value.length > 0) {
+  if (history.value.length > 0 && !isGameComplete.value) {
     gameGrid.value = history.value.pop()
   }
 }
@@ -197,7 +251,7 @@ const toggleNoteMode = (mode) => {
 }
 
 const inputNumber = (number) => {
-  if (!selectedCell.value || isSelectedCellFixed()) return
+  if (!selectedCell.value || isSelectedCellFixed() || isGameComplete.value) return
   
   const { row, col } = selectedCell.value
   const cell = gameGrid.value[row][col]
@@ -221,10 +275,13 @@ const inputNumber = (number) => {
     cell.centerNote = []
     cell.cornerNotes = []
   }
+  
+  // Check if game is complete
+  checkGameComplete()
 }
 
 const eraseCell = () => {
-  if (!selectedCell.value || isSelectedCellFixed()) return
+  if (!selectedCell.value || isSelectedCellFixed() || isGameComplete.value) return
   
   const { row, col } = selectedCell.value
   const cell = gameGrid.value[row][col]
@@ -241,6 +298,8 @@ const goBack = () => {
 }
 
 const resetGame = () => {
+  if (isGameComplete.value) return
+  
   saveState()
   
   for (let row = 0; row < 9; row++) {
