@@ -62,29 +62,33 @@
         <div
           v-for="(cell, index) in gameGrid.flat()"
           :key="index"
-          class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold relative aspect-square"
+          class="border border-gray-300 flex items-center justify-center text-2xl font-bold relative aspect-square"
           :class="{
             'bg-blue-100 border-2 border-blue-500':
               selectedCell?.row === Math.floor(index / 9) &&
               selectedCell?.col === index % 9 &&
               !isGameComplete,
-            'bg-gray-100 text-gray-800 font-black hover:bg-gray-100':
+            'bg-gray-200 text-gray-800 font-black hover:bg-gray-100':
               isFixedCell(Math.floor(index / 9), index % 9),
-            'border-r-4 border-r-gray-800': (index % 9) === 2 || (index % 9) === 5,
-            'border-b-4 border-b-gray-800': Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5,
+            'border-r-4 border-r-gray-800': index % 9 === 2 || index % 9 === 5,
+            'border-b-4 border-b-gray-800':
+              Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5,
             'text-red-600 bg-red-50':
               cell.value && !isValidCell(Math.floor(index / 9), index % 9),
             'cursor-pointer hover:bg-gray-100': !isGameComplete,
             'cursor-not-allowed': isGameComplete,
           }"
-          @click="!isGameComplete && selectCell(Math.floor(index / 9), index % 9)"
+          @click="
+            !isGameComplete && selectCell(Math.floor(index / 9), index % 9)
+          "
         >
           <!-- Main number -->
           <span
             v-if="cell.value"
-            class="text-sm sm:text-lg font-bold"
+            class="font-bold"
             :class="{
-              'text-red-600': cell.value && !isValidCell(Math.floor(index / 9), index % 9),
+              'text-red-600':
+                cell.value && !isValidCell(Math.floor(index / 9), index % 9),
               'text-blue-600':
                 cell.value &&
                 isValidCell(Math.floor(index / 9), index % 9) &&
@@ -97,7 +101,7 @@
           <!-- Center note -->
           <div
             v-if="cell.centerNote && cell.centerNote.length > 0 && !cell.value"
-            class="text-[10px] sm:text-xs text-gray-600 absolute inset-0 flex items-center justify-center"
+            class="text-xs text-gray-600 absolute inset-0 flex items-center justify-center"
           >
             {{ cell.centerNote.join("") }}
           </div>
@@ -107,7 +111,7 @@
             v-if="
               cell.cornerNotes && cell.cornerNotes.length > 0 && !cell.value
             "
-            class="absolute inset-0 text-[8px] sm:text-[10px] text-gray-600"
+            class="absolute inset-0 text-xs text-gray-600"
           >
             <div
               class="absolute top-0 left-0 w-full h-1/2 flex flex-wrap justify-start items-start pl-0.5 pt-0.5"
@@ -155,7 +159,7 @@
           X
         </button>
       </div>
-      
+
       <!-- Desktop: single row layout -->
       <div class="hidden sm:flex gap-3 justify-center flex-wrap">
         <button
