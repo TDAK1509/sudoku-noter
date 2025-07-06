@@ -62,7 +62,7 @@
         <div
           v-for="(cell, index) in gameGrid.flat()"
           :key="index"
-          class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold transition-colors duration-200 relative aspect-square"
+          class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold relative aspect-square"
           :class="{
             'bg-blue-100 border-2 border-blue-500':
               selectedCell?.row === Math.floor(index / 9) &&

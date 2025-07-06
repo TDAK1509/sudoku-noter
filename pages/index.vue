@@ -19,7 +19,7 @@
         <div
           v-for="(cell, index) in sudokuGrid.flat()"
           :key="index"
-          class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100 relative aspect-square"
+          class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold cursor-pointer bg-white hover:bg-gray-100 relative aspect-square"
           :class="{
             'bg-blue-100 border-2 border-blue-500':
               selectedCell?.row === Math.floor(index / 9) && selectedCell?.col === index % 9,
