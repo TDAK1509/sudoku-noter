@@ -1,34 +1,35 @@
 <template>
-  <div 
+  <div
     class="max-w-2xl mx-auto p-5 text-center"
     tabindex="0"
     @keydown="handleKeydown"
   >
     <h1 class="text-3xl font-bold text-gray-800 mb-8">Sudoku Noter</h1>
-    
+
+    <p class="text-gray-600 mb-8">
+      Create your Sudoku puzzle and start solving it.
+    </p>
+
     <div class="inline-block border-4 border-gray-800 mb-8">
-      <div
-        v-for="(row, rowIndex) in sudokuGrid"
-        :key="rowIndex"
-        class="flex"
-      >
+      <div v-for="(row, rowIndex) in sudokuGrid" :key="rowIndex" class="flex">
         <div
           v-for="(cell, colIndex) in row"
           :key="colIndex"
           class="w-12 h-12 border border-gray-300 flex items-center justify-center text-xl font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100 relative"
-          :class="{ 
-            'bg-blue-100 border-2 border-blue-500': selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
+          :class="{
+            'bg-blue-100 border-2 border-blue-500':
+              selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
             'border-r-4 border-r-gray-800': colIndex === 2 || colIndex === 5,
             'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5,
-            'text-red-600 bg-red-50': cell && !isValidCell(rowIndex, colIndex)
+            'text-red-600 bg-red-50': cell && !isValidCell(rowIndex, colIndex),
           }"
           @click="selectCell(rowIndex, colIndex)"
         >
-          {{ cell || '' }}
+          {{ cell || "" }}
         </div>
       </div>
     </div>
-    
+
     <div class="flex gap-3 justify-center mb-8 flex-wrap">
       <button
         v-for="num in 9"
@@ -47,8 +48,8 @@
         X
       </button>
     </div>
-    
-    <button 
+
+    <button
       class="bg-green-500 text-white px-8 py-3 text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-green-600 border-none"
       @click="submitPuzzle"
     >
@@ -58,116 +59,122 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from "vue";
 
-const sudokuGrid = ref(Array(9).fill().map(() => Array(9).fill(null)))
-const selectedCell = ref(null)
+const sudokuGrid = ref(
+  Array(9)
+    .fill()
+    .map(() => Array(9).fill(null))
+);
+const selectedCell = ref(null);
 
 const selectCell = (row, col) => {
-  selectedCell.value = { row, col }
-}
+  selectedCell.value = { row, col };
+};
 
 const isValidCell = (row, col) => {
-  const value = sudokuGrid.value[row][col]
-  if (!value) return true
-  
+  const value = sudokuGrid.value[row][col];
+  if (!value) return true;
+
   // Check row
   for (let c = 0; c < 9; c++) {
     if (c !== col && sudokuGrid.value[row][c] === value) {
-      return false
+      return false;
     }
   }
-  
+
   // Check column
   for (let r = 0; r < 9; r++) {
     if (r !== row && sudokuGrid.value[r][col] === value) {
-      return false
+      return false;
     }
   }
-  
+
   // Check 3x3 block
-  const blockRow = Math.floor(row / 3) * 3
-  const blockCol = Math.floor(col / 3) * 3
-  
+  const blockRow = Math.floor(row / 3) * 3;
+  const blockCol = Math.floor(col / 3) * 3;
+
   for (let r = blockRow; r < blockRow + 3; r++) {
     for (let c = blockCol; c < blockCol + 3; c++) {
       if ((r !== row || c !== col) && sudokuGrid.value[r][c] === value) {
-        return false
+        return false;
       }
     }
   }
-  
-  return true
-}
 
-const inputNumber = (number) => {
+  return true;
+};
+
+const inputNumber = number => {
   if (selectedCell.value) {
-    const { row, col } = selectedCell.value
-    sudokuGrid.value[row][col] = number
-    saveToLocalStorage()
+    const { row, col } = selectedCell.value;
+    sudokuGrid.value[row][col] = number;
+    saveToLocalStorage();
   }
-}
+};
 
 const clearCell = () => {
   if (selectedCell.value) {
-    const { row, col } = selectedCell.value
-    sudokuGrid.value[row][col] = null
-    saveToLocalStorage()
+    const { row, col } = selectedCell.value;
+    sudokuGrid.value[row][col] = null;
+    saveToLocalStorage();
   }
-}
+};
 
 const saveToLocalStorage = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     try {
-      localStorage.setItem('sudokuInputGrid', JSON.stringify(sudokuGrid.value))
+      localStorage.setItem("sudokuInputGrid", JSON.stringify(sudokuGrid.value));
     } catch (e) {
-      console.error('Failed to save to localStorage:', e)
+      console.error("Failed to save to localStorage:", e);
     }
   }
-}
+};
 
 const loadFromLocalStorage = () => {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     try {
-      const saved = localStorage.getItem('sudokuInputGrid')
+      const saved = localStorage.getItem("sudokuInputGrid");
       if (saved) {
-        const parsedGrid = JSON.parse(saved)
-        sudokuGrid.value = parsedGrid
+        const parsedGrid = JSON.parse(saved);
+        sudokuGrid.value = parsedGrid;
       }
     } catch (e) {
-      console.error('Failed to load from localStorage:', e)
+      console.error("Failed to load from localStorage:", e);
     }
   }
-}
+};
 
 const submitPuzzle = () => {
-  const puzzleData = sudokuGrid.value.map(row => [...row])
-  const puzzleState = useState('sudokuPuzzle')
-  puzzleState.value = puzzleData
-  
+  const puzzleData = sudokuGrid.value.map(row => [...row]);
+  const puzzleState = useState("sudokuPuzzle");
+  puzzleState.value = puzzleData;
+
   // Save initial puzzle to localStorage
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     try {
-      localStorage.setItem('sudokuInitialPuzzle', JSON.stringify(puzzleData))
-      localStorage.removeItem('sudokuGameState') // Clear any previous game state
+      localStorage.setItem("sudokuInitialPuzzle", JSON.stringify(puzzleData));
+      localStorage.removeItem("sudokuGameState"); // Clear any previous game state
     } catch (e) {
-      console.error('Failed to save puzzle to localStorage:', e)
+      console.error("Failed to save puzzle to localStorage:", e);
     }
   }
-  
-  navigateTo('/play')
-}
 
-const handleKeydown = (e) => {
-  if (selectedCell.value && e.key >= '1' && e.key <= '9') {
-    inputNumber(parseInt(e.key))
-  } else if (selectedCell.value && (e.key === 'Backspace' || e.key === 'Delete')) {
-    clearCell()
+  navigateTo("/play");
+};
+
+const handleKeydown = e => {
+  if (selectedCell.value && e.key >= "1" && e.key <= "9") {
+    inputNumber(parseInt(e.key));
+  } else if (
+    selectedCell.value &&
+    (e.key === "Backspace" || e.key === "Delete")
+  ) {
+    clearCell();
   }
-}
+};
 
 onMounted(() => {
-  loadFromLocalStorage()
-})
+  loadFromLocalStorage();
+});
 </script>
-
