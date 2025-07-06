@@ -116,12 +116,9 @@ const clearCell = () => {
 
 const submitPuzzle = () => {
   const puzzleData = sudokuGrid.value.map(row => [...row])
-  navigateTo({
-    path: '/play',
-    query: {
-      puzzle: JSON.stringify(puzzleData)
-    }
-  })
+  const puzzleState = useState('sudokuPuzzle')
+  puzzleState.value = puzzleData
+  navigateTo('/play')
 }
 
 const handleKeydown = (e) => {

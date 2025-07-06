@@ -333,10 +333,10 @@ const formatTime = (seconds) => {
 let timerInterval = null
 
 onMounted(() => {
-  const route = useRoute()
-  if (route.query.puzzle) {
+  const puzzleState = useState('sudokuPuzzle')
+  if (puzzleState.value) {
     try {
-      const puzzle = JSON.parse(route.query.puzzle)
+      const puzzle = puzzleState.value
       for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
           gameGrid.value[row][col] = {
@@ -348,7 +348,7 @@ onMounted(() => {
         }
       }
     } catch (e) {
-      console.error('Error parsing puzzle data:', e)
+      console.error('Error loading puzzle data:', e)
     }
   }
   
