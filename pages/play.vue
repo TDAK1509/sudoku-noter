@@ -5,6 +5,39 @@
     @keydown="handleKeydown"
   >
     <h1 class="text-3xl font-bold text-gray-800 mb-8">Sudoku Game</h1>
+    
+    <!-- Control buttons -->
+    <div class="flex gap-3 justify-center mb-6 flex-wrap">
+      <button
+        class="px-4 py-2 border-2 border-gray-800 bg-white text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="undo"
+        :disabled="history.length === 0"
+      >
+        Undo
+      </button>
+      <button
+        class="px-4 py-2 border-2 border-gray-800 text-sm font-bold cursor-pointer rounded transition-all duration-200"
+        :class="noteMode === 'center' ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'"
+        @click="toggleNoteMode('center')"
+      >
+        Center Note
+      </button>
+      <button
+        class="px-4 py-2 border-2 border-gray-800 text-sm font-bold cursor-pointer rounded transition-all duration-200"
+        :class="noteMode === 'corners' ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'"
+        @click="toggleNoteMode('corners')"
+      >
+        Corners Note
+      </button>
+      <button
+        class="px-4 py-2 border-2 border-gray-800 bg-red-50 text-red-700 text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="eraseCell"
+        :disabled="!selectedCell || isSelectedCellFixed()"
+      >
+        Erase
+      </button>
+    </div>
+    
     <div class="inline-block border-4 border-gray-800 mb-8">
       <div
         v-for="(row, rowIndex) in gameGrid"
@@ -14,7 +47,7 @@
         <div
           v-for="(cell, colIndex) in row"
           :key="colIndex"
-          class="w-12 h-12 border border-gray-300 flex items-center justify-center text-xl font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100"
+          class="w-12 h-12 border border-gray-300 flex items-center justify-center text-xl font-bold cursor-pointer bg-white transition-colors duration-200 hover:bg-gray-100 relative"
           :class="{ 
             'bg-blue-100 border-2 border-blue-500': selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
             'bg-gray-100 text-gray-800 font-black hover:bg-gray-100': isFixedCell(rowIndex, colIndex),
@@ -23,7 +56,23 @@
           }"
           @click="selectCell(rowIndex, colIndex)"
         >
-          {{ cell || '' }}
+          <!-- Main number -->
+          <span v-if="cell.value" class="text-xl font-bold">{{ cell.value }}</span>
+          
+          <!-- Center note -->
+          <div v-if="cell.centerNote && cell.centerNote.length > 0 && !cell.value" class="text-xs text-gray-600 absolute inset-0 flex items-center justify-center">
+            {{ cell.centerNote.join('') }}
+          </div>
+          
+          <!-- Corner notes -->
+          <div v-if="cell.cornerNotes && cell.cornerNotes.length > 0 && !cell.value" class="absolute inset-0 text-xs text-gray-600">
+            <div class="absolute top-0 left-0 w-full h-1/2 flex flex-wrap justify-start items-start pl-0.5 pt-0.5">
+              <span v-for="(note, index) in cell.cornerNotes.slice(0, 4)" :key="index" class="text-xs leading-none mr-0.5">{{ note }}</span>
+            </div>
+            <div v-if="cell.cornerNotes.length > 4" class="absolute bottom-0 left-0 w-full h-1/2 flex flex-wrap justify-start items-end pl-0.5 pb-0.5">
+              <span v-for="(note, index) in cell.cornerNotes.slice(4)" :key="index" class="text-xs leading-none mr-0.5">{{ note }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -37,13 +86,6 @@
         :disabled="!selectedCell || isSelectedCellFixed()"
       >
         {{ num }}
-      </button>
-      <button
-        class="w-12 h-12 border-2 border-gray-800 bg-red-50 text-red-700 font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="clearCell"
-        :disabled="!selectedCell || isSelectedCellFixed()"
-      >
-        X
       </button>
     </div>
     
@@ -67,9 +109,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-const gameGrid = ref(Array(9).fill().map(() => Array(9).fill(null)))
+const gameGrid = ref(Array(9).fill().map(() => Array(9).fill().map(() => ({
+  value: null,
+  centerNote: [],
+  cornerNotes: []
+}))))
 const fixedCells = ref(Array(9).fill().map(() => Array(9).fill(false)))
 const selectedCell = ref(null)
+const noteMode = ref(null) // null, 'center', or 'corners'
+const history = ref([])
 
 const selectCell = (row, col) => {
   selectedCell.value = { row, col }
@@ -85,18 +133,62 @@ const isSelectedCellFixed = () => {
   return fixedCells.value[row][col]
 }
 
-const inputNumber = (number) => {
-  if (selectedCell.value && !isSelectedCellFixed()) {
-    const { row, col } = selectedCell.value
-    gameGrid.value[row][col] = number
+const saveState = () => {
+  const state = JSON.parse(JSON.stringify(gameGrid.value))
+  history.value.push(state)
+  if (history.value.length > 50) {
+    history.value.shift()
   }
 }
 
-const clearCell = () => {
-  if (selectedCell.value && !isSelectedCellFixed()) {
-    const { row, col } = selectedCell.value
-    gameGrid.value[row][col] = null
+const undo = () => {
+  if (history.value.length > 0) {
+    gameGrid.value = history.value.pop()
   }
+}
+
+const toggleNoteMode = (mode) => {
+  noteMode.value = noteMode.value === mode ? null : mode
+}
+
+const inputNumber = (number) => {
+  if (!selectedCell.value || isSelectedCellFixed()) return
+  
+  const { row, col } = selectedCell.value
+  const cell = gameGrid.value[row][col]
+  
+  saveState()
+  
+  if (noteMode.value === 'center') {
+    if (!cell.centerNote.includes(number)) {
+      cell.centerNote.push(number)
+      cell.centerNote.sort((a, b) => a - b)
+    }
+    cell.value = null
+  } else if (noteMode.value === 'corners') {
+    if (!cell.cornerNotes.includes(number)) {
+      cell.cornerNotes.push(number)
+      cell.cornerNotes.sort((a, b) => a - b)
+    }
+    cell.value = null
+  } else {
+    cell.value = number
+    cell.centerNote = []
+    cell.cornerNotes = []
+  }
+}
+
+const eraseCell = () => {
+  if (!selectedCell.value || isSelectedCellFixed()) return
+  
+  const { row, col } = selectedCell.value
+  const cell = gameGrid.value[row][col]
+  
+  saveState()
+  
+  cell.value = null
+  cell.centerNote = []
+  cell.cornerNotes = []
 }
 
 const goBack = () => {
@@ -104,10 +196,16 @@ const goBack = () => {
 }
 
 const resetGame = () => {
+  saveState()
+  
   for (let row = 0; row < 9; row++) {
     for (let col = 0; col < 9; col++) {
       if (!fixedCells.value[row][col]) {
-        gameGrid.value[row][col] = null
+        gameGrid.value[row][col] = {
+          value: null,
+          centerNote: [],
+          cornerNotes: []
+        }
       }
     }
   }
@@ -118,7 +216,7 @@ const handleKeydown = (e) => {
   if (selectedCell.value && !isSelectedCellFixed() && e.key >= '1' && e.key <= '9') {
     inputNumber(parseInt(e.key))
   } else if (selectedCell.value && !isSelectedCellFixed() && (e.key === 'Backspace' || e.key === 'Delete')) {
-    clearCell()
+    eraseCell()
   }
 }
 
@@ -129,7 +227,11 @@ onMounted(() => {
       const puzzle = JSON.parse(route.query.puzzle)
       for (let row = 0; row < 9; row++) {
         for (let col = 0; col < 9; col++) {
-          gameGrid.value[row][col] = puzzle[row][col]
+          gameGrid.value[row][col] = {
+            value: puzzle[row][col],
+            centerNote: [],
+            cornerNotes: []
+          }
           fixedCells.value[row][col] = puzzle[row][col] !== null
         }
       }
