@@ -228,7 +228,56 @@ const checkGameComplete = () => {
   return true
 }
 
+const saveToLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const gameState = {
+        gameGrid: gameGrid.value,
+        fixedCells: fixedCells.value,
+        startTime: startTime.value,
+        elapsedTime: elapsedTime.value,
+        isGameComplete: isGameComplete.value,
+        noteMode: noteMode.value
+      }
+      localStorage.setItem('sudokuGameState', JSON.stringify(gameState))
+    } catch (e) {
+      console.error('Failed to save game state to localStorage:', e)
+    }
+  }
+}
+
+const loadFromLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const savedGameState = localStorage.getItem('sudokuGameState')
+      if (savedGameState) {
+        const gameState = JSON.parse(savedGameState)
+        gameGrid.value = gameState.gameGrid
+        fixedCells.value = gameState.fixedCells
+        startTime.value = gameState.startTime
+        elapsedTime.value = gameState.elapsedTime
+        isGameComplete.value = gameState.isGameComplete
+        noteMode.value = gameState.noteMode || null
+        return true
+      }
+    } catch (e) {
+      console.error('Failed to load game state from localStorage:', e)
+    }
+  }
+  return false
+}
+
 const startNewGame = () => {
+  // Clear localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem('sudokuGameState')
+      localStorage.removeItem('sudokuInitialPuzzle')
+      localStorage.removeItem('sudokuInputGrid')
+    } catch (e) {
+      console.error('Failed to clear localStorage:', e)
+    }
+  }
   navigateTo('/')
 }
 
@@ -243,6 +292,7 @@ const saveState = () => {
 const undo = () => {
   if (history.value.length > 0 && !isGameComplete.value) {
     gameGrid.value = history.value.pop()
+    saveToLocalStorage()
   }
 }
 
@@ -276,6 +326,9 @@ const inputNumber = (number) => {
     cell.cornerNotes = []
   }
   
+  // Save to localStorage
+  saveToLocalStorage()
+  
   // Check if game is complete
   checkGameComplete()
 }
@@ -291,6 +344,9 @@ const eraseCell = () => {
   cell.value = null
   cell.centerNote = []
   cell.cornerNotes = []
+  
+  // Save to localStorage
+  saveToLocalStorage()
 }
 
 const goBack = () => {
@@ -314,6 +370,9 @@ const resetGame = () => {
     }
   }
   selectedCell.value = null
+  
+  // Save to localStorage
+  saveToLocalStorage()
 }
 
 const handleKeydown = (e) => {
@@ -333,6 +392,18 @@ const formatTime = (seconds) => {
 let timerInterval = null
 
 onMounted(() => {
+  // Try to load from localStorage first
+  if (loadFromLocalStorage()) {
+    // Game state loaded from localStorage, restart timer if not complete
+    if (!isGameComplete.value) {
+      timerInterval = setInterval(() => {
+        elapsedTime.value = Math.floor((Date.now() - startTime.value) / 1000)
+      }, 1000)
+    }
+    return
+  }
+  
+  // If no localStorage, try useState
   const puzzleState = useState('sudokuPuzzle')
   if (puzzleState.value) {
     try {
@@ -350,9 +421,29 @@ onMounted(() => {
     } catch (e) {
       console.error('Error loading puzzle data:', e)
     }
+  } else {
+    // Try to load initial puzzle from localStorage
+    try {
+      const savedPuzzle = localStorage.getItem('sudokuInitialPuzzle')
+      if (savedPuzzle) {
+        const puzzle = JSON.parse(savedPuzzle)
+        for (let row = 0; row < 9; row++) {
+          for (let col = 0; col < 9; col++) {
+            gameGrid.value[row][col] = {
+              value: puzzle[row][col],
+              centerNote: [],
+              cornerNotes: []
+            }
+            fixedCells.value[row][col] = puzzle[row][col] !== null
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error loading puzzle from localStorage:', e)
+    }
   }
   
-  // Start timer
+  // Start timer (only if not loaded from localStorage)
   startTime.value = Date.now()
   timerInterval = setInterval(() => {
     elapsedTime.value = Math.floor((Date.now() - startTime.value) / 1000)

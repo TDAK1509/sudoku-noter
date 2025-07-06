@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const sudokuGrid = ref(Array(9).fill().map(() => Array(9).fill(null)))
 const selectedCell = ref(null)
@@ -104,6 +104,7 @@ const inputNumber = (number) => {
   if (selectedCell.value) {
     const { row, col } = selectedCell.value
     sudokuGrid.value[row][col] = number
+    saveToLocalStorage()
   }
 }
 
@@ -111,6 +112,31 @@ const clearCell = () => {
   if (selectedCell.value) {
     const { row, col } = selectedCell.value
     sudokuGrid.value[row][col] = null
+    saveToLocalStorage()
+  }
+}
+
+const saveToLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('sudokuInputGrid', JSON.stringify(sudokuGrid.value))
+    } catch (e) {
+      console.error('Failed to save to localStorage:', e)
+    }
+  }
+}
+
+const loadFromLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('sudokuInputGrid')
+      if (saved) {
+        const parsedGrid = JSON.parse(saved)
+        sudokuGrid.value = parsedGrid
+      }
+    } catch (e) {
+      console.error('Failed to load from localStorage:', e)
+    }
   }
 }
 
@@ -118,6 +144,17 @@ const submitPuzzle = () => {
   const puzzleData = sudokuGrid.value.map(row => [...row])
   const puzzleState = useState('sudokuPuzzle')
   puzzleState.value = puzzleData
+  
+  // Save initial puzzle to localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('sudokuInitialPuzzle', JSON.stringify(puzzleData))
+      localStorage.removeItem('sudokuGameState') // Clear any previous game state
+    } catch (e) {
+      console.error('Failed to save puzzle to localStorage:', e)
+    }
+  }
+  
   navigateTo('/play')
 }
 
@@ -128,5 +165,9 @@ const handleKeydown = (e) => {
     clearCell()
   }
 }
+
+onMounted(() => {
+  loadFromLocalStorage()
+})
 </script>
 
