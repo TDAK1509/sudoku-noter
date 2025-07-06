@@ -19,11 +19,12 @@
           :class="{ 
             'bg-blue-100 border-2 border-blue-500': selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
             'border-r-4 border-r-gray-800': colIndex === 2 || colIndex === 5,
-            'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5
+            'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5,
+            'text-red-600 bg-red-50': cell && !isValidCell(rowIndex, colIndex)
           }"
           @click="selectCell(rowIndex, colIndex)"
         >
-          {{ cell.value || '' }}
+          {{ cell || '' }}
         </div>
       </div>
     </div>
@@ -64,6 +65,39 @@ const selectedCell = ref(null)
 
 const selectCell = (row, col) => {
   selectedCell.value = { row, col }
+}
+
+const isValidCell = (row, col) => {
+  const value = sudokuGrid.value[row][col]
+  if (!value) return true
+  
+  // Check row
+  for (let c = 0; c < 9; c++) {
+    if (c !== col && sudokuGrid.value[row][c] === value) {
+      return false
+    }
+  }
+  
+  // Check column
+  for (let r = 0; r < 9; r++) {
+    if (r !== row && sudokuGrid.value[r][col] === value) {
+      return false
+    }
+  }
+  
+  // Check 3x3 block
+  const blockRow = Math.floor(row / 3) * 3
+  const blockCol = Math.floor(col / 3) * 3
+  
+  for (let r = blockRow; r < blockRow + 3; r++) {
+    for (let c = blockCol; c < blockCol + 3; c++) {
+      if ((r !== row || c !== col) && sudokuGrid.value[r][c] === value) {
+        return false
+      }
+    }
+  }
+  
+  return true
 }
 
 const inputNumber = (number) => {

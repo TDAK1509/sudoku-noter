@@ -57,12 +57,17 @@
             'bg-blue-100 border-2 border-blue-500': selectedCell?.row === rowIndex && selectedCell?.col === colIndex,
             'bg-gray-100 text-gray-800 font-black hover:bg-gray-100': isFixedCell(rowIndex, colIndex),
             'border-r-4 border-r-gray-800': colIndex === 2 || colIndex === 5,
-            'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5
+            'border-b-4 border-b-gray-800': rowIndex === 2 || rowIndex === 5,
+            'text-red-600 bg-red-50': cell.value && !isValidCell(rowIndex, colIndex)
           }"
           @click="selectCell(rowIndex, colIndex)"
         >
           <!-- Main number -->
-          <span v-if="cell.value" class="text-xl font-bold" :class="!isFixedCell(rowIndex, colIndex) ? 'text-blue-600' : 'text-gray-800'">{{ cell.value }}</span>
+          <span v-if="cell.value" class="text-xl font-bold" :class="{
+            'text-red-600': cell.value && !isValidCell(rowIndex, colIndex),
+            'text-blue-600': cell.value && isValidCell(rowIndex, colIndex) && !isFixedCell(rowIndex, colIndex),
+            'text-gray-800': isFixedCell(rowIndex, colIndex)
+          }">{{ cell.value }}</span>
           
           <!-- Center note -->
           <div v-if="cell.centerNote && cell.centerNote.length > 0 && !cell.value" class="text-xs text-gray-600 absolute inset-0 flex items-center justify-center">
@@ -138,6 +143,39 @@ const isSelectedCellFixed = () => {
   if (!selectedCell.value) return false
   const { row, col } = selectedCell.value
   return fixedCells.value[row][col]
+}
+
+const isValidCell = (row, col) => {
+  const value = gameGrid.value[row][col].value
+  if (!value) return true
+  
+  // Check row
+  for (let c = 0; c < 9; c++) {
+    if (c !== col && gameGrid.value[row][c].value === value) {
+      return false
+    }
+  }
+  
+  // Check column
+  for (let r = 0; r < 9; r++) {
+    if (r !== row && gameGrid.value[r][col].value === value) {
+      return false
+    }
+  }
+  
+  // Check 3x3 block
+  const blockRow = Math.floor(row / 3) * 3
+  const blockCol = Math.floor(col / 3) * 3
+  
+  for (let r = blockRow; r < blockRow + 3; r++) {
+    for (let c = blockCol; c < blockCol + 3; c++) {
+      if ((r !== row || c !== col) && gameGrid.value[r][c].value === value) {
+        return false
+      }
+    }
+  }
+  
+  return true
 }
 
 const saveState = () => {
