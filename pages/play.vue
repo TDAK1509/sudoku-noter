@@ -97,7 +97,7 @@
           <!-- Center note -->
           <div
             v-if="cell.centerNote && cell.centerNote.length > 0 && !cell.value"
-            class="text-xs text-gray-600 absolute inset-0 flex items-center justify-center"
+            class="text-[10px] sm:text-xs text-gray-600 absolute inset-0 flex items-center justify-center"
           >
             {{ cell.centerNote.join("") }}
           </div>
@@ -107,7 +107,7 @@
             v-if="
               cell.cornerNotes && cell.cornerNotes.length > 0 && !cell.value
             "
-            class="absolute inset-0 text-xs text-gray-600"
+            class="absolute inset-0 text-[8px] sm:text-[10px] text-gray-600"
           >
             <div
               class="absolute top-0 left-0 w-full h-1/2 flex flex-wrap justify-start items-start pl-0.5 pt-0.5"
@@ -115,7 +115,7 @@
               <span
                 v-for="(note, noteIndex) in cell.cornerNotes.slice(0, 4)"
                 :key="noteIndex"
-                class="text-xs leading-none mr-0.5"
+                class="text-[8px] sm:text-[10px] leading-none mr-0.5"
                 >{{ note }}</span
               >
             </div>
@@ -126,7 +126,7 @@
               <span
                 v-for="(note, noteIndex) in cell.cornerNotes.slice(4)"
                 :key="noteIndex"
-                class="text-xs leading-none mr-0.5"
+                class="text-[8px] sm:text-[10px] leading-none mr-0.5"
                 >{{ note }}</span
               >
             </div>
