@@ -4,7 +4,12 @@
     tabindex="0"
     @keydown="handleKeydown"
   >
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Sudoku Game</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-4">Sudoku Game</h1>
+    
+    <!-- Timer -->
+    <div class="text-2xl font-bold text-blue-600 mb-6">
+      {{ formatTime(elapsedTime) }}
+    </div>
     
     <!-- Control buttons -->
     <div class="flex gap-3 justify-center mb-6 flex-wrap">
@@ -57,7 +62,7 @@
           @click="selectCell(rowIndex, colIndex)"
         >
           <!-- Main number -->
-          <span v-if="cell.value" class="text-xl font-bold">{{ cell.value }}</span>
+          <span v-if="cell.value" class="text-xl font-bold" :class="!isFixedCell(rowIndex, colIndex) ? 'text-blue-600' : 'text-gray-800'">{{ cell.value }}</span>
           
           <!-- Center note -->
           <div v-if="cell.centerNote && cell.centerNote.length > 0 && !cell.value" class="text-xs text-gray-600 absolute inset-0 flex items-center justify-center">
@@ -107,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const gameGrid = ref(Array(9).fill().map(() => Array(9).fill().map(() => ({
   value: null,
@@ -118,6 +123,8 @@ const fixedCells = ref(Array(9).fill().map(() => Array(9).fill(false)))
 const selectedCell = ref(null)
 const noteMode = ref(null) // null, 'center', or 'corners'
 const history = ref([])
+const startTime = ref(Date.now())
+const elapsedTime = ref(0)
 
 const selectCell = (row, col) => {
   selectedCell.value = { row, col }
@@ -220,6 +227,14 @@ const handleKeydown = (e) => {
   }
 }
 
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+let timerInterval = null
+
 onMounted(() => {
   const route = useRoute()
   if (route.query.puzzle) {
@@ -238,6 +253,18 @@ onMounted(() => {
     } catch (e) {
       console.error('Error parsing puzzle data:', e)
     }
+  }
+  
+  // Start timer
+  startTime.value = Date.now()
+  timerInterval = setInterval(() => {
+    elapsedTime.value = Math.floor((Date.now() - startTime.value) / 1000)
+  }, 1000)
+})
+
+onUnmounted(() => {
+  if (timerInterval) {
+    clearInterval(timerInterval)
   }
 })
 </script>
