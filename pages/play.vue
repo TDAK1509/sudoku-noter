@@ -13,48 +13,6 @@
       {{ formatTime(elapsedTime) }}
     </div>
 
-    <!-- Control buttons -->
-    <div class="flex gap-2 sm:gap-3 justify-center mb-4 sm:mb-6 flex-wrap">
-      <button
-        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 bg-white text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="undo"
-        :disabled="history.length === 0 || isGameComplete"
-      >
-        Undo
-      </button>
-      <button
-        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        :class="
-          noteMode === 'center'
-            ? 'bg-blue-500 text-white'
-            : 'bg-white hover:bg-gray-100'
-        "
-        @click="toggleNoteMode('center')"
-        :disabled="isGameComplete"
-      >
-        Center Note
-      </button>
-      <button
-        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        :class="
-          noteMode === 'corners'
-            ? 'bg-blue-500 text-white'
-            : 'bg-white hover:bg-gray-100'
-        "
-        @click="toggleNoteMode('corners')"
-        :disabled="isGameComplete"
-      >
-        Corners Note
-      </button>
-      <button
-        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 bg-red-50 text-red-700 text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="eraseCell"
-        :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
-      >
-        Erase
-      </button>
-    </div>
-
     <div class="w-full max-w-sm sm:max-w-md mx-auto mb-4 sm:mb-8">
       <div
         class="grid grid-cols-9 border-2 sm:border-4 border-gray-800 bg-white aspect-square"
@@ -137,6 +95,48 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Control buttons -->
+    <div class="flex gap-2 sm:gap-3 justify-center mb-4 sm:mb-6 flex-wrap">
+      <button
+        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 bg-white text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="undo"
+        :disabled="history.length === 0 || isGameComplete"
+      >
+        Undo
+      </button>
+      <button
+        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        :class="
+          noteMode === 'center'
+            ? 'bg-blue-500 text-white'
+            : 'bg-white hover:bg-gray-100'
+        "
+        @click="toggleNoteMode('center')"
+        :disabled="isGameComplete"
+      >
+        Center Note
+      </button>
+      <button
+        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        :class="
+          noteMode === 'corners'
+            ? 'bg-blue-500 text-white'
+            : 'bg-white hover:bg-gray-100'
+        "
+        @click="toggleNoteMode('corners')"
+        :disabled="isGameComplete"
+      >
+        Corners Note
+      </button>
+      <button
+        class="px-2 py-1 sm:px-4 sm:py-2 border-2 border-gray-800 bg-red-50 text-red-700 text-xs sm:text-sm font-bold cursor-pointer rounded transition-all duration-200 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="eraseCell"
+        :disabled="!selectedCell || isSelectedCellFixed() || isGameComplete"
+      >
+        Erase
+      </button>
     </div>
 
     <div class="mb-4 sm:mb-8 mx-auto max-w-sm sm:max-w-none">
