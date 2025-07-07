@@ -407,13 +407,21 @@ const inputNumber = number => {
   saveState();
 
   if (noteMode.value === "center") {
-    if (!cell.centerNote.includes(number)) {
+    if (cell.centerNote.includes(number)) {
+      // Toggle: remove the number if it already exists
+      cell.centerNote = cell.centerNote.filter(n => n !== number);
+    } else {
+      // Add the number if it doesn't exist
       cell.centerNote.push(number);
       cell.centerNote.sort((a, b) => a - b);
     }
     cell.value = null;
   } else if (noteMode.value === "corners") {
-    if (!cell.cornerNotes.includes(number)) {
+    if (cell.cornerNotes.includes(number)) {
+      // Toggle: remove the number if it already exists
+      cell.cornerNotes = cell.cornerNotes.filter(n => n !== number);
+    } else {
+      // Add the number if it doesn't exist
       cell.cornerNotes.push(number);
       cell.cornerNotes.sort((a, b) => a - b);
     }
