@@ -22,10 +22,13 @@
           class="border border-gray-300 flex items-center justify-center text-sm sm:text-lg font-bold cursor-pointer bg-white hover:bg-gray-100 relative aspect-square"
           :class="{
             'bg-blue-100 border-2 border-blue-500':
-              selectedCell?.row === Math.floor(index / 9) && selectedCell?.col === index % 9,
-            'border-r-4 border-r-gray-800': (index % 9) === 2 || (index % 9) === 5,
-            'border-b-4 border-b-gray-800': Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5,
-            'text-red-600 bg-red-50': cell && !isValidCell(Math.floor(index / 9), index % 9),
+              selectedCell?.row === Math.floor(index / 9) &&
+              selectedCell?.col === index % 9,
+            'border-r-4 border-r-gray-800': index % 9 === 2 || index % 9 === 5,
+            'border-b-4 border-b-gray-800':
+              Math.floor(index / 9) === 2 || Math.floor(index / 9) === 5,
+            'text-red-600 bg-red-50':
+              cell && !isValidCell(Math.floor(index / 9), index % 9),
           }"
           @click="selectCell(Math.floor(index / 9), index % 9)"
         >
@@ -54,7 +57,7 @@
           X
         </button>
       </div>
-      
+
       <!-- Desktop: single row layout -->
       <div class="hidden sm:flex gap-3 justify-center flex-wrap">
         <button
@@ -86,8 +89,6 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-
 const sudokuGrid = ref(
   Array(9)
     .fill()
@@ -158,20 +159,6 @@ const saveToLocalStorage = () => {
   }
 };
 
-const loadFromLocalStorage = () => {
-  if (typeof window !== "undefined") {
-    try {
-      const saved = localStorage.getItem("sudokuInputGrid");
-      if (saved) {
-        const parsedGrid = JSON.parse(saved);
-        sudokuGrid.value = parsedGrid;
-      }
-    } catch (e) {
-      console.error("Failed to load from localStorage:", e);
-    }
-  }
-};
-
 const submitPuzzle = () => {
   const puzzleData = sudokuGrid.value.map(row => [...row]);
   const puzzleState = useState("sudokuPuzzle");
@@ -200,8 +187,4 @@ const handleKeydown = e => {
     clearCell();
   }
 };
-
-onMounted(() => {
-  loadFromLocalStorage();
-});
 </script>
