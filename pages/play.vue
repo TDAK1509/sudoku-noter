@@ -151,20 +151,23 @@
       </button>
     </div>
 
-    <div class="flex gap-3 sm:gap-5 justify-center flex-wrap">
-      <button
-        class="bg-gray-600 text-white px-4 py-2 sm:px-8 sm:py-3 text-sm sm:text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-gray-700 border-none disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="goBack"
-        :disabled="isGameComplete"
-      >
-        Back to Input
-      </button>
+    <div
+      class="flex flex-col items-centergap-3 sm:gap-5 justify-center flex-wrap"
+    >
       <button
         class="bg-orange-500 text-white px-4 py-2 sm:px-8 sm:py-3 text-sm sm:text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-orange-600 border-none disabled:opacity-50 disabled:cursor-not-allowed"
         @click="resetGame"
         :disabled="isGameComplete"
       >
         Reset Game
+      </button>
+
+      <button
+        class="bg-gray-600 text-white px-4 py-2 sm:px-8 sm:py-3 text-sm sm:text-lg rounded cursor-pointer transition-colors duration-200 hover:bg-gray-700 border-none disabled:opacity-50 disabled:cursor-not-allowed"
+        @click="goBack"
+        :disabled="isGameComplete"
+      >
+        Back to Input
       </button>
     </div>
 
